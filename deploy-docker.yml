@@ -1,0 +1,54 @@
+- name: Déploiement infrastructure Docker
+  hosts: all
+  become: yes
+  vars_files:
+    - vars.yml
+    - vault.yml
+  tasks:
+    - name: Installer Docker
+      apt:
+        name: "{{ docker_packages }}"
+        state: present
+        update_cache: yes
+
+    - name: Démarrer Docker
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Ajouter l'utilisateur au groupe docker
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    - name: Installer module Python Docker
+      apt:
+        name: python3-docker
+        state: present
+
+    - name: Déployer MySQL (DB node)
+      when: "'db' in group_names"
+      community.docker.docker_container:
+        name: "{{ mysql_container }}"
+        image: "{{ mysql_image }}"
+        state: started
+        restart_policy: always
+        env:
+          MYSQL_DATABASE: "{{ mysql_database }}"
+          MYSQL_USER: "{{ mysql_user }}"
+          MYSQL_PASSWORD: "{{ mysql_password }}"
+          MYSQL_ROOT_PASSWORD: "{{ mysql_root_password }}"
+        ports:
+          - "3306:3306"
+
+    - name: Déployer application Web (APP node)
+      when: "'app' in group_names"
+      community.docker.docker_container:
+        name: "{{ app_container }}"
+        image: "{{ app_image }}"
+        state: started
+        restart_policy: always
+        ports:
+          - "{{ app_port }}:80"
