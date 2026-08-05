@@ -1,0 +1,12 @@
+docker_packages:
+  - docker.io
+  - docker-compose
+
+mysql_container: mysql-db
+mysql_image: mysql:8
+mysql_database: app_db
+mysql_user: appuser
+
+app_container: web-app
+app_image: nginx:latest
+app_port: 8080
