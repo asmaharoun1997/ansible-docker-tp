@@ -36,10 +36,10 @@
         state: started
         restart_policy: always
         env:
-          MYSQL_DATABASE: "{{ mysql_database }}"
-          MYSQL_USER: "{{ mysql_user }}"
-          MYSQL_PASSWORD: "{{ mysql_password }}"
-          MYSQL_ROOT_PASSWORD: "{{ mysql_root_password }}"
+          MYSQL_DATABASE: "{{ mysql_database | string }}"
+          MYSQL_USER: "{{ mysql_user | string }}"
+          MYSQL_PASSWORD: "{{ mysql_password | string }}"
+          MYSQL_ROOT_PASSWORD: "{{ mysql_root_password | string }}"
         ports:
           - "3306:3306"
 
