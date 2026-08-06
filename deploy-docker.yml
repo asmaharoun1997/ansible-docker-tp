@@ -57,14 +57,44 @@
         src: files/init.sql
         dest: /opt/mysql-init/init.sql
         mode: '0644'
-    - name: Copier la page d'accueil
+    - name: Copier l'application Flask
       when: "'app' in group_names"
       copy:
-        src: files/index.html
-        dest: /opt/webapp/index.html
+        src: files/app.py
+        dest: /opt/webapp/app.py
         mode: '0644'
 
+    - name: Copier la configuration Nginx
+      when: "'app' in group_names"
+      copy:
+        src: files/nginx.conf
+        dest: /opt/webapp/nginx.conf
+        mode: '0644'
 
+    - name: Créer le réseau Docker applicatif
+      when: "'app' in group_names"
+      community.docker.docker_network:
+        name: "{{ docker_network }}"
+        state: present
+
+    - name: Déployer Python/Flask
+      when: "'app' in group_names"
+      community.docker.docker_container:
+        name: "{{ python_container }}"
+        image: "{{ python_image }}"
+        state: started
+        restart_policy: always
+        networks:
+          - name: "{{ docker_network }}"
+        working_dir: /app
+        command: bash -c "pip install --no-cache-dir flask mysql-connector-python && python app.py"
+        env:
+          DB_HOST: "{{ db_host | string }}"
+          DB_NAME: "{{ mysql_database | string }}"
+          DB_USER: "{{ mysql_user | string }}"
+          DB_PASSWORD: "{{ mysql_password | string }}"
+        volumes:
+          - /opt/webapp:/app
 
     - name: Déployer application Web (APP node)
       when: "'app' in group_names"
@@ -73,9 +103,9 @@
         image: "{{ app_image }}"
         state: started
         restart_policy: always
+        networks:
+          - name: "{{ docker_network }}"
         ports:
           - "{{ app_port }}:80"
         volumes:
-          - /opt/webapp:/usr/share/nginx/html:ro
-
-
+          - /opt/webapp/nginx.conf:/etc/nginx/conf.d/default.conf:ro

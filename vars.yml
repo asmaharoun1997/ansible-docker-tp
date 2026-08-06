@@ -11,3 +11,6 @@ app_container: web-app
 app_image: nginx:latest
 app_port: 8080
 db_host: 192.168.56.30
+python_image: python:3.12-slim
+python_container: python-app
+docker_network: webnet
