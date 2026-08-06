@@ -1,3 +1,4 @@
+SET NAMES utf8mb4;
 USE app_db;
 
 CREATE TABLE IF NOT EXISTS produits (
