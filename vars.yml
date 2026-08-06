@@ -10,3 +10,4 @@ mysql_user: appuser
 app_container: web-app
 app_image: nginx:latest
 app_port: 8080
+db_host: 192.168.56.30
